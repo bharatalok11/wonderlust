@@ -5,17 +5,16 @@ const passport = require('passport');
 const {savePostLoginUrl, isAlreadyLoggedIn, isAlreadyLoggedOut } = require('../middleware.js');
 const userController = require('../controllers/users.js');
 
-router.get('/signup', isAlreadyLoggedIn , userController.renderSignupForm);
+router.route("/signup")
+    .get(isAlreadyLoggedIn , userController.renderSignupForm)
+    .post(wrapAsync(userController.signup));
 
-router.post('/signup', wrapAsync(userController.signup));
-
-router.get('/login',isAlreadyLoggedIn, userController.renderLoginForm);
-
-// passport.authenticate() middleware invokes req.login() automatically
-router.post('/login', 
-    savePostLoginUrl,
-    passport.authenticate('local',{failureRedirect:'/login' ,failureFlash : true}) ,
-    wrapAsync(userController.login));
+router.route("/login")
+    .get(isAlreadyLoggedIn, userController.renderLoginForm)
+    // passport.authenticate() middleware invokes req.login() automatically
+    .post(savePostLoginUrl,
+        passport.authenticate('local',{failureRedirect:'/login' ,failureFlash : true}) ,
+        wrapAsync(userController.login));
 
 router.get('/logout',isAlreadyLoggedOut,userController.logout);
 
