@@ -3,12 +3,20 @@ const router = express.Router({mergeParams : true});
 const wrapAsync = require("../utils/wrapAsync.js");
 const {isLoggedIn, isOwnner, validateListing} = require('../middleware.js')
 const listingController = require('../controllers/listings.js');
+const multer = require('multer');
+
+const {storage} = require('../cloudConfig.js')
+const upload = multer({storage});
 
 // index route , create route
 router.route("/")
     .get(wrapAsync(listingController.index))
-    .post(isLoggedIn, validateListing , wrapAsync(listingController.createListing))
-    
+    .post(isLoggedIn, 
+        upload.single('listing[image]'),
+        validateListing , 
+        wrapAsync(listingController.createListing)
+    );
+
 // new route is above show route, because if we keep it below show route, and will not work as expected 
 router.get("/new", isLoggedIn , listingController.renderNewForm);
 
