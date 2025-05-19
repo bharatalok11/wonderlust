@@ -9,6 +9,7 @@
             action="/listings/<%= listing._id %>?_method=PUT"
             novalidate
             class="needs-validation"
+            enctype="multipart/form-data"
             >
             <div class="mb-3">
                 <label for="title" class="form-label">Title</label>
@@ -34,15 +35,27 @@
                 <div class="valid-feedback">Description looks good!</div>
                 <div class="invalid-feedback">Enter Description</div>
             </div>
+
+            <%# preview listing image %>
             <div class="mb-3">
-                <label for="image" class="form-label">Image</label>
+                <label for="image" class="form-label">Current listing image</label>
+                <img 
+                    class="preview-image"
+                    src="<%= originalImageUrl %>" 
+                    alt="listing image"
+                />
+                <p class="text-muted">If you want to keep the same image, Don't upload new image</p>
+            </div>
+        
+            
+            <%# in editing listing we can provide new image %>
+            <div class="mb-3">
+                <label for="image" class="form-label">Upload modified listing image</label>
                 <input 
                     name="listing[image]" 
-                    value="<%= listing.image.url %>" 
-                    type="text"
-                    class="form-control" required
+                    type="file"
+                    class="form-control"
                 />
-                <div class="invalid-feedback">Enter a valid image link</div>
             </div>
             <div class="row">
                 <div class="col-md-4 mb-3">

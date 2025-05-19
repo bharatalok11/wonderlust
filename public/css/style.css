@@ -141,3 +141,11 @@ body{
     transform: scale(1.05); /* Slight enlargement on hover */
     transition: all 0.2s ease-in-out;
 }
+
+/* preview image styling in edit.ejs */
+.preview-image{
+    width: 100%;
+    height: 30vh;
+    border-radius: 0.5rem;
+    object-fit:fill ;
+}
