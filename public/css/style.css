@@ -149,3 +149,10 @@ body{
     border-radius: 0.5rem;
     object-fit:fill ;
 }
+
+/* map container styling - for mapbox*/
+#map {
+    width: 200%;
+    height: 30vh;
+    border-radius: 0.5rem;
+}
