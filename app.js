@@ -12,6 +12,7 @@ const ejsMate = require('ejs-mate');
 const ExpressError = require("./utils/ExpressError.js");
 
 const session = require('express-session');
+const MongoStore = require('connect-mongo'); // this is used to store session in mongo db
 const flash = require('connect-flash');
 
 const passport = require('passport');
@@ -22,7 +23,6 @@ const listingRouter = require('./routes/listing.js');
 const reviewRouter = require('./routes/review.js');
 const userRouter = require('./routes/user.js');
 
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json()); // Parses JSON data in the request body
@@ -31,16 +31,44 @@ app.use(methodOverride('_method'));
 app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, 'public')));
 
+// connecting to mongo db
+const MONGODB_URL = process.env.ATLASDB_URL;
+const PORT = process.env.PORT || 10000;
+connectToDB().then(()=>{
+    console.log("Connected to DB");
+}).catch((err)=>{
+    console.log("Error connecting to DB", err); 
+});
+async function connectToDB() {
+    await mongoose.connect(MONGODB_URL);
+}
+
+// session store 
+const store = MongoStore.create({
+    mongoUrl: MONGODB_URL,
+    crypto: {
+        secret: process.env.SESSION_SECRET, // secret to encrypt the session
+    },
+    touchAfter: 24 * 3600,                  // time period in seconds
+    ttl: 24 * 3600 * 7,                     // time to live in seconds
+});
+store.on("error", (err)=>{
+    console.log("Session store error", err);
+});
+
+// session configuration
 const sessionConfig = {
-    secret : "thisshouldbeasecret",
+    store : store,
+    secret : process.env.SESSION_SECRET,
     resave : false,
     saveUninitialized : true,
     cookie : {
         expires : Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
-        maxAge : 1000 * 60 * 60 * 24 * 7, // 7 days
+        maxAge : 1000 * 60 * 60 * 24 * 7,               // 7 days
         httpOnly : true,
     }
 };
+
 
 // these two lines are used to set up session and flash messages in express should come before routes to work properly
 app.use(session(sessionConfig));
@@ -62,16 +90,6 @@ app.use((req,res,next)=>{
     next();
 });
 
-// connecting to mongo db
-const MONGODB_URL = "mongodb://127.0.0.1:27017/wonderlust";
-connectToDB().then(()=>{
-    console.log("Connected to DB");
-}).catch((err)=>{
-    console.log("Error connecting to DB", err); 
-});
-async function connectToDB() {
-    await mongoose.connect(MONGODB_URL);
-}
 
 // root route
 app.get("/", (req,res)=>{
@@ -97,6 +115,6 @@ app.use((err,req,res,next)=>{
 });
 
 
-app.listen(8080, () => {
-    console.log('Server is running on port 8080');
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
